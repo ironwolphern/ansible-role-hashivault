@@ -1,0 +1,6 @@
+---
+- name: "Install Hashicorp Vault server | Install Lets Encrypt certificate | {{ _title_pfx }}"
+  delegate_to: "{{ ansible_hostname | default('localhost', true) }}"
+  become: true
+  tags: [certbot]
+  block:

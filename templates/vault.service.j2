@@ -1,0 +1,24 @@
+[Unit]
+Description=Hashicorp vault for managing secrets
+Documentation=https://vaultproject.io/docs/
+After=network.target
+ConditionFileNotEmpty={{ hashivault__config_dir }}/vault.hcl
+
+[Service]
+User={{ hashivault__user }}
+Group={{ hashivault__group }}
+ExecStart={{ hashivault__install_dir }}/vault server -config={{ hashivault__config_dir }}/vault.hcl
+ExecReload=/usr/local/bin/kill --signal HUP $MAINPID
+ProtectSystem=full
+PrivateTmp=yes
+CapabilityBoundingSet=CAP_SYSLOG CAP_IPC_LOCK
+Capabilities=CAP_IPC_LOCK=+ep
+SecureBits=keep-caps
+ProtectHome=read-only
+PrivateDevices=yes
+NoNewPrivileges=yes
+LimitCORE=0
+KillSignal=SIGINT
+
+[Install]
+WantedBy=multi-user.target

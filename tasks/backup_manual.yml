@@ -1,0 +1,17 @@
+---
+- name: "Backup Hashicorp Vault server Manual | Backup_manual | {{ _title_pfx }}"
+  delegate_to: "{{ ansible_hostname | default('localhost', true) }}"
+  become: true
+  tags: [never, backup_manual]
+  block:
+    - name: "Header | Backup_manual | {{ _title_pfx }}"
+      ansible.builtin.debug:
+        msg: "----------------------------------- BACKUP / MANUAL ----------------------------------"
+
+    - name: "Backup Hashicorp Vault server manual | Backup_manual | {{ _title_pfx }}"
+      ansible.builtin.command:
+        cmd: vault operator raft snapshot save "{{ hashivault__install_dir }}/backup/{{ hashivault__snap_name }}.snap"
+      environment:
+        VAULT_ADDR: "https://{{ hashivault__server_fqdn }}:8200"
+      register: _hashivault_backup
+      changed_when: _hashivault_backup.rc == 0

@@ -1,0 +1,35 @@
+---
+- name: "Backup Hashicorp Vault server automatic | Backup_auto | {{ _title_pfx }}"
+  delegate_to: "{{ ansible_hostname | default('localhost', true) }}"
+  become: true
+  tags: [never, backup_auto]
+  block:
+    - name: "Header | Backup_auto | {{ _title_pfx }}"
+      ansible.builtin.debug:
+        msg: "----------------------------------- BACKUP / AUTO ------------------------------------"
+
+    - name: "Set fact for path and name backup auto | Backup_auto | {{ _title_pfx }}"
+      ansible.builtin.set_fact:
+        hashivault__backup_path: '{{ hashivault__install_dir }}/backup/{{ hashivault__snap_name }}_`date "+\%d-\%m-\%Y"`.snap'
+
+    - name: "Backup Hashicorp Vault server automatic | Backup_auto | {{ _title_pfx }}"
+      ansible.builtin.cron:
+        name: "Backup Hashicorp Vault server automatic"
+        minute: "{{ hashivault__backup_minute }}"
+        hour: "{{ hashivault__backup_hour }}"
+        weekday: "{{ hashivault__backup_weekday }}"
+        user: root
+        job: |
+          "vault operator raft snapshot save -address=https://{{ hashivault__server_fqdn }}:8200 {{ hashivault__backup_path }}"
+        cron_file: hashivault_backup
+
+    - name: "Rotate backup files Hashicorp Vault server | Backup_auto | {{ _title_pfx }}"
+      ansible.builtin.cron:
+        name: "Rotate backup files Hashicorp Vault server"
+        minute: "{{ hashivault__backup_rotate_minute }}"
+        hour: "{{ hashivault__backup_rotate_hour }}"
+        weekday: "{{ hashivault__backup_rotate_weekday }}"
+        user: root
+        job: "find {{ hashivault__install_dir }}/backup -type f -name '{{ hashivault__snap_name }}_*.snap' -mtime +{{ hashivault__backup_rotate }} -delete"
+        cron_file: hashivault_backup_rotate
+      when: hashivault__backup_rotate > 0

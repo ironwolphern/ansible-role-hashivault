@@ -1,0 +1,57 @@
+---
+- name: "Remove Hashicorp Vault server | Remove | {{ _title_pfx }}"
+  delegate_to: "{{ ansible_hostname | default('localhost', true) }}"
+  become: true
+  tags: [never, remove]
+  block:
+    - name: "Header | Remove | {{ _title_pfx }}"
+      ansible.builtin.debug:
+        msg: "--------------------------------------- REMOVE ---------------------------------------"
+
+    - name: "Stop Hashicorp Vault service | Remove | {{ _title_pfx }}"
+      ansible.builtin.systemd:
+        name: vault
+        state: stopped
+        enabled: false
+
+    - name: "Remove Hashicorp Vault service | Remove | {{ _title_pfx }}"
+      ansible.builtin.file:
+        path: /etc/systemd/system/vault.service
+        state: absent
+
+    - name: "Remove Hashicorp Vault directories | Remove | {{ _title_pfx }}"
+      ansible.builtin.file:
+        path: "{{ item }}"
+        state: absent
+      loop:
+        - "{{ hashivault__config_dir }}"
+        - "{{ hashivault__install_dir }}"
+
+    - name: "Unset Hashicorp Vault path env | Remove | {{ _title_pfx }}"
+      ansible.builtin.file:
+        path: /etc/profile.d/hashivault.sh
+        state: absent
+
+    - name: "Delete Hashicorp Vault user | Remove | {{ _title_pfx }}"
+      ansible.builtin.user:
+        name: "{{ hashivault__user }}"
+        state: absent
+
+    - name: "Delete Hashicorp Vault group | Remove | {{ _title_pfx }}"
+      ansible.builtin.group:
+        name: "{{ hashivault__group }}"
+        state: absent
+
+    - name: "Enable swap | Remove | {{ _title_pfx }}"
+      ansible.builtin.command:
+        cmd: swapon -a
+      register: _cmd_result
+      changed_when: _cmd_result.rc == 0
+      when: ansible_virtualization_type != "lxc"
+
+    - name: "Restore swap partition | Remove | {{ _title_pfx }}"
+      ansible.builtin.command:
+        cmd: mv /etc/fstab.* /etc/fstab
+      register: _cmd_result2
+      changed_when: _cmd_result2.rc == 0
+      when: ansible_virtualization_type != "lxc"

@@ -1,0 +1,163 @@
+---
+- name: "Install Hashicorp Vault server | Install | {{ _title_pfx }}"
+  delegate_to: "{{ ansible_hostname | default('localhost', true) }}"
+  become: true
+  tags: [install, update]
+  block:
+    - name: "Header | Install | {{ _title_pfx }}"
+      ansible.builtin.debug:
+        msg: "---------------------------------- INSTALL / UPDATE ----------------------------------"
+
+    - name: "Check required parameters | Install | {{ _title_pfx }}"
+      ansible.builtin.assert:
+        that:
+          - "{{ item }}|d('',true)|length > 0"
+        fail_msg: "Required parameter '{{ item }}' is not defined."
+        success_msg: "Required parameter '{{ item }}' is ok."
+        quiet: true
+      loop:
+        - hashivault__version
+        - hashivault__server_fqdn
+
+    - name: "Install dependencies | Install | {{ _title_pfx }}"
+      ansible.builtin.package:
+        name: "{{ item }}"
+        state: present
+      loop: "{{ hashivault__base_packages }}"
+
+    - name: "Disable swap | Install | {{ _title_pfx }}"
+      ansible.builtin.command:
+        cmd: swapoff -a
+      register: _swapoff
+      changed_when: _swapoff.rc == 0
+      when: ansible_virtualization_type != "lxc"
+
+    - name: "Disable swap partition | Install | {{ _title_pfx }}"
+      ansible.builtin.lineinfile:
+        path: /etc/fstab
+        regexp: "swap"
+        state: absent
+        backup: true
+      when: ansible_virtualization_type != "lxc"
+
+    - name: "Disable shell history for new users | Install | {{ _title_pfx }}"
+      ansible.builtin.lineinfile:
+        path: /etc/profile
+        line: "set +o history"
+
+    - name: "Disable shell history for user | Install | {{ _title_pfx }}"
+      ansible.builtin.lineinfile:
+        path: ~/.bashrc
+        line: "set +o history"
+
+    - name: "Create Hashicorp Vault user | Install | {{ _title_pfx }}"
+      ansible.builtin.user:
+        name: "{{ hashivault__user }}"
+        shell: /bin/nologin
+        system: true
+        createhome: false
+        state: present
+
+    - name: "Create Hashicorp Vault group | Install | {{ _title_pfx }}"
+      ansible.builtin.group:
+        name: "{{ hashivault__group }}"
+        system: true
+        state: present
+
+    - name: "Create Hashicorp Vault directories | Install | {{ _title_pfx }}"
+      ansible.builtin.file:
+        path: "{{ item }}"
+        state: directory
+        owner: "{{ hashivault__user }}"
+        group: "{{ hashivault__group }}"
+        mode: "0750"
+      loop:
+        - "{{ hashivault__config_dir }}"
+        - "{{ hashivault__install_dir }}"
+
+    - name: "Create Hashicorp Vault directories for tls, data, backup and plugins | Install | {{ _title_pfx }}"
+      ansible.builtin.file:
+        path: "{{ item }}"
+        state: directory
+        owner: "{{ hashivault__user }}"
+        group: "{{ hashivault__group }}"
+        mode: "0750"
+      loop:
+        - "{{ hashivault__config_dir }}/tls"
+        - "{{ hashivault__install_dir }}/plugins"
+        - "{{ hashivault__install_dir }}/data"
+        - "{{ hashivault__install_dir }}/backup"
+        - "{{ hashivault__install_dir }}/log"
+
+    - name: "Download binaries Hashicorp Vault | Install | {{ _title_pfx }}"
+      ansible.builtin.get_url:
+        url: "https://releases.hashicorp.com/vault/{{ hashivault__version }}/vault_{{ hashivault__version }}_linux_amd64.zip"
+        dest: "{{ hashivault__tmp_dir }}/vault_{{ hashivault__version }}_linux_amd64.zip"
+        mode: "0644"
+
+    - name: "Unzip binaries Hashicorp Vault | Install | {{ _title_pfx }}"
+      ansible.builtin.unarchive:
+        src: "{{ hashivault__tmp_dir }}/vault_{{ hashivault__version }}_linux_amd64.zip"
+        dest: "{{ hashivault__install_dir }}"
+        owner: "{{ hashivault__user }}"
+        group: "{{ hashivault__group }}"
+        mode: "0750"
+        remote_src: true
+        keep_newer: true
+
+    - name: "Set binaries Hashicorp Vault capabilities | Install | {{ _title_pfx }}"
+      community.general.capabilities:
+        path: "{{ hashivault__install_dir }}/vault"
+        capability: cap_ipc_lock=+ep
+        state: present
+
+    - name: "Create link to Hashicorp Vault binary | Install | {{ _title_pfx }}"
+      ansible.builtin.file:
+        src: "{{ hashivault__install_dir }}/vault"
+        dest: /usr/local/bin/vault
+        state: link
+        force: true
+
+    - name: "Copy certificate and CA certificates to Hashicorp Vault | Install | {{ _title_pfx }}"
+      ansible.builtin.copy:
+        src: "{{ item }}"
+        dest: "{{ hashivault__config_dir }}/tls/{{ item }}"
+        owner: root
+        group: root
+        mode: "0644"
+      loop:
+        - custom-cert.pem
+        - custom-ca.pem
+
+    - name: "Copy certificate key to Hashicorp Vault | Install | {{ _title_pfx }}"
+      ansible.builtin.copy:
+        src: "{{ item }}"
+        dest: "{{ hashivault__config_dir }}/tls/{{ item }}"
+        owner: root
+        group: "{{ hashivault__group }}"
+        mode: "0640"
+      loop:
+        - custom-key.pem
+
+    - name: "Create Hashicorp Vault config file | Install | {{ _title_pfx }}"
+      ansible.builtin.template:
+        src: vault.hcl.j2
+        dest: "{{ hashivault__config_dir }}/vault.hcl"
+        owner: "{{ hashivault__user }}"
+        group: "{{ hashivault__group }}"
+        mode: "0640"
+
+    - name: "Create Hashicorp Vault service file | Install | {{ _title_pfx }}"
+      ansible.builtin.template:
+        src: vault.service.j2
+        dest: /etc/systemd/system/vault.service
+        owner: root
+        group: root
+        mode: "0644"
+      notify: systemd_reload
+
+    - name: "Start Hashicorp Vault service | Install | {{ _title_pfx }}"
+      ansible.builtin.systemd:
+        name: vault
+        state: started
+        enabled: true

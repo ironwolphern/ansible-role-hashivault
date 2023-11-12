@@ -1,5 +1,5 @@
 ---
-- name: "Role Example | {{ _title_pfx }}"
+- name: "Role for deploy Hashicorp Vault | {{ _title_pfx }}"
   delegate_to: "{{ ansible_hostname | default('localhost', true) }}"
   become: true
   block:
@@ -8,9 +8,45 @@
         file: init.yml
       tags: [always]
 
-    - name: "Task for example role | {{ _title_pfx }}"
-      ansible.builtin.debug:
-        msg: "------- This is an task example role -------"
+    - name: "Install or Update Hashicorp Vault server | {{ _title_pfx }}"
+      ansible.builtin.import_tasks:
+        file: install.yml
+      tags: [install, update]
+
+    - name: "Initialize Hashicorp Vault server | {{ _title_pfx }}"
+      ansible.builtin.import_tasks:
+        file: initialize.yml
+      tags: [initialize]
+
+    - name: "Unseal Hashicorp Vault server | {{ _title_pfx }}"
+      ansible.builtin.import_tasks:
+        file: unseal.yml
+      tags: [unseal]
+
+    - name: "Post-install Hashicorp Vault server | {{ _title_pfx }}"
+      ansible.builtin.import_tasks:
+        file: post_install.yml
+      tags: [post_install]
+
+    - name: "Backup Hashicorp Vault server Auto | {{ _title_pfx }}"
+      ansible.builtin.import_tasks:
+        file: backup_auto.yml
+      tags: [never, backup_auto]
+
+    - name: "Backup Hashicorp Vault server Manual | {{ _title_pfx }}"
+      ansible.builtin.import_tasks:
+        file: backup_manual.yml
+      tags: [never, backup_manual]
+
+    - name: "Restore backup Hashicorp Vault server | {{ _title_pfx }}"
+      ansible.builtin.import_tasks:
+        file: restore.yml
+      tags: [never, restore]
+
+    - name: "Remove Hashicorp Vault server | {{ _title_pfx }}"
+      ansible.builtin.import_tasks:
+        file: remove.yml
+      tags: [never, remove]
 
     - name: "Finalize role | {{ _title_pfx }}"
       ansible.builtin.import_tasks:

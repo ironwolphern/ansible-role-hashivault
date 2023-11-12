@@ -1,0 +1,46 @@
+---
+- name: "Unseal Hashicorp Vault server | Unseal | {{ _title_pfx }}"
+  delegate_to: "{{ ansible_hostname | default('localhost', true) }}"
+  become: true
+  tags: unseal
+  block:
+    - name: "Header | Unseal | {{ _title_pfx }}"
+      ansible.builtin.debug:
+        msg: "--------------------------------------- UNSEAL ---------------------------------------"
+
+    - name: "Check if Hashicorp Vault server is already unsealed | Unseal | {{ _title_pfx }}"
+      ansible.builtin.shell:
+        cmd: "set -o pipefail && vault status -format=yaml | grep -q 'sealed: false'"
+      environment:
+        VAULT_ADDR: "https://{{ hashivault__server_fqdn }}:8200"
+      register: _hashivault__unseal_status
+      changed_when: _hashivault__unseal_status.rc != 0
+      failed_when: _hashivault__unseal_status.rc not in [ 0, 1 ]
+
+    - name: "Process unseal Hashicorp Vault server | Unseal | {{ _title_pfx }}"
+      when: _hashivault__unseal_status.rc != 0
+      block:
+        - name: "Find unseal keys | Unseal | {{ _title_pfx }}"
+          ansible.builtin.find:
+            paths: "{{ hashivault__config_dir }}/unseal"
+            patterns: "*.key"
+            file_type: file
+          register: _hashivault__unseal_path_keys
+
+        - name: "Read unseal keys from files | Unseal | {{ _title_pfx }}"
+          ansible.builtin.command:
+            cmd: "cat {{ item.path }}"
+          register: _hashivault__unseal_keys
+          changed_when: _hashivault__unseal_keys.rc == 0
+          loop: "{{ _hashivault__unseal_path_keys.files }}"
+          no_log: "{{ not hashivault__debugger }}"
+
+        - name: "Unseal Hashicorp Vault server | Unseal | {{ _title_pfx }}"
+          ansible.builtin.command:
+            cmd: "vault operator unseal {{ item.stdout }}"
+          environment:
+            VAULT_ADDR: "https://{{ hashivault__server_fqdn }}:8200"
+          register: _hashivault__unseal
+          changed_when: _hashivault__unseal.rc == 0
+          loop: "{{ _hashivault__unseal_keys.results }}"
+          no_log: "{{ not hashivault__debugger }}"

@@ -1,0 +1,56 @@
+---
+- name: "Post-install Hashicorp Vault server | Post_install | {{ _title_pfx }}"
+  delegate_to: "{{ ansible_hostname | default('localhost', true) }}"
+  become: true
+  tags: post_install
+  block:
+    - name: "Header | Post_install | {{ _title_pfx }}"
+      ansible.builtin.debug:
+        msg: "------------------------------------ POST_INSTALL ------------------------------------"
+
+    - name: "Read root token from files | Post_install | {{ _title_pfx }}"
+      ansible.builtin.command:
+        cmd: "cat {{ hashivault__config_dir }}/token/hv-root.token"
+      register: _hashivault__root_token
+      changed_when: _hashivault__root_token.rc == 0
+      no_log: "{{ not hashivault__debugger }}"
+
+    - name: "Login to Hashicorp Vault server | Post_install | {{ _title_pfx }}"
+      ansible.builtin.command:
+        cmd: "vault login {{ _hashivault__root_token.stdout }}"
+      environment:
+        VAULT_ADDR: "https://{{ hashivault__server_fqdn }}:8200"
+      register: _hashivault__login
+      changed_when: _hashivault__login.rc == 0
+      run_once: true
+      no_log: "{{ not hashivault__debugger }}"
+
+    - name: "Enable Hashicorp Vault server audit device | Post_install | {{ _title_pfx }}"
+      ansible.builtin.command:
+        cmd: "vault audit enable -local file file_path={{ hashivault__install_dir }}/log/vault_audit.log"
+      environment:
+        VAULT_ADDR: "https://{{ hashivault__server_fqdn }}:8200"
+      register: _hashivault__audit_enable
+      changed_when: _hashivault__audit_enable.rc == 0
+      failed_when: '"already in use" not in _hashivault__audit_enable.stderr'
+      run_once: true
+
+    - name: "Enable Hashicorp Vault KV secret engine | Post_install | {{ _title_pfx }}"
+      ansible.builtin.command:
+        cmd: "vault secrets enable -path={{ hashivault__kv_secret_engine_path }} kv-v2"
+      environment:
+        VAULT_ADDR: "https://{{ hashivault__server_fqdn }}:8200"
+      register: _hashivault__kv_enable
+      changed_when: _hashivault__kv_enable.rc == 0
+      failed_when: '"already in use" not in _hashivault__kv_enable.stderr'
+      run_once: true
+
+    - name: "Enaable Hashicorp Vault Approle auth method | Post_install | {{ _title_pfx }}"
+      ansible.builtin.command:
+        cmd: "vault auth enable approle"
+      environment:
+        VAULT_ADDR: "https://{{ hashivault__server_fqdn }}:8200"
+      register: _hashivault__approle_enable
+      changed_when: _hashivault__approle_enable.rc == 0
+      failed_when: '"already in use" not in _hashivault__approle_enable.stderr'
+      run_once: true

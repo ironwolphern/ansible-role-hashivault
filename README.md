@@ -1,58 +1,106 @@
-# **template-ansible-role**
+:construction: ***DEVELOPING*** :construction:
+
+**Ansible Role hashivault**
+===========================
 
 ![Ansible](https://img.shields.io/badge/ansible-%231A1918.svg?style=flat&logo=ansible&logoColor=white)
-![License](https://badgen.net/github/license/ironwolphern/template-ansible-role)
-![Release](https://badgen.net/github/release/ironwolphern/template-ansible-role)
-![PRs](https://badgen.net/github/prs/ironwolphern/template-ansible-role)
-![Issues](https://badgen.net/github/issues/ironwolphern/template-ansible-role)
-[![Ansible Lint](https://github.com/ironwolphern/template-ansible-role/actions/workflows/ansible-lint.yml/badge.svg)](https://github.com/ironwolphern/template-ansible-role/actions/workflows/ansible-lint.yml)
-![Dependabot](https://badgen.net/github/dependabot/ironwolphern/template-ansible-role)
+![License](https://badgen.net/github/license/ironwolphern/ansible-role-hashivault)
+![Release](https://badgen.net/github/release/ironwolphern/ansible-role-hashivault)
+![PRs](https://badgen.net/github/prs/ironwolphern/ansible-role-hashivault)
+![Issues](https://badgen.net/github/issues/ironwolphern/ansible-role-hashivault)
+[![Ansible Lint](https://github.com/ironwolphern/ansible-role-hashivault/actions/workflows/ansible-lint.yml/badge.svg)](https://github.com/ironwolphern/ansible-role-hashivault/actions/workflows/ansible-lint.yml)
+![Dependabot](https://badgen.net/github/dependabot/ironwolphern/ansible-role-hashivault)
 
-A brief description of the role goes here.
+This is a ansible role to install a Hashicorp Vault server with integrated storage in an standalone server.  
+For more information od this product visit https://www.vaultproject.io
 
-## *Requirements*
+*Requirements*
+--------------
 
-Any pre-requisites that may not be covered by Ansible itself or the role should be mentioned here. For instance, if the role uses the EC2 module, it may be a good idea to mention in this section that the boto package is required.
+This role need the unzip package, if not installed in your OS, the role will install it.  
+The recommended server features for lab are:
 
-## *Role Variables*
+For lab enviroment:
 
-A description of the settable variables for this role should go here, including any variables that are in defaults/main.yml, vars/main.yml, and any variables that can/should be set via parameters to the role. Any variables that are read from other roles and/or the global scope (ie. hostvars, group vars, etc.) should be mentioned here as well.
+  - 1 CPU
+  - 4 GB of Memory
+  - 50 GB of storage
+
+For production aprox:
+
+  - 2 CPUs
+  - 8 GB of Memory
+  - 100 GB of storge
+
+*Role Variables*
+----------------
 
 This is a list of required and optinal variables and parameters for this role:
 
 | **Parameter**                  | **Description**            | **Type** |     **Default**     |**Required**|
 |--------------------------------|----------------------------|----------|:-------------------:|:----------:|
-| variable_input        | description             |  type  | default value          |     yes/no     |
+| hashivault__install_dir        | dir to install             |  string  | /opt/vault          |     no     |
+| hashivault__config_dir         | dir to configure           |  string  | /etc/vault.d        |     no     |
+| hashivault__version            | version of the server      |  number  | 1.15.1              |     yes    |
+| hashivault__user               | service user               |  string  | vault               |     no     |
+| hashivault__group              | service group              |  string  | vault               |     no     |
+| hashivault__server_fqdn        | Name in fqdn               |  string  | vault.example.local |     yes    |
+| hashivault__init_key_shares    | total keys seal            |  number  | 5                   |     no     |
+| hashivault__init_key_threshold | keys for unseal            |  number  | 3                   |     no     |
+| hashivault__snap_name          | Name for backup            |  string  | backup              |     no     |
+| hashivault__restore_file_path  | Path for restore backup    |  string  | ''                  |     no     |
 
-## *Dependencies*
 
-A list of other roles hosted on Galaxy should go here, plus any details in regards to parameters that may need to be set for other roles, or variables that are used from other roles.
+*Dependencies*
+--------------
 
-## *Example Playbook*
+There are no dependencies.
+
+*Example Playbook*
+------------------
 
 This is an example of use role with optionals and required parameters:
 
-*playbook-file.yml*
+*play-hv.yml*
 ```yaml
-    - hosts: example
+    - hosts: vault
       roles:
-        - example-role
+        - hashivault
       vars:
-        var_input_1: XXXXXXXX
-        var_input_2: 00000000
+        hashivault__version: 1.15.1
+        hashivault__server_fqdn: vault.example.local
 ```
 
 These are some examples of the use of this playbook with the different tags that can be used in this role:
 
-Install and configure for example
+Install and configure full
 ```bash
-  ansible-playbook -i inventory playbook-file.yml
+  ansible-playbook -i inventory play-hv.yml
 ```
-## *License*
+Uninstall
+```bash
+  ansible-playbook -i inventory play-hv.yml -t remove
+```
+Set backup auto
+```bash
+  ansible-playbook -i inventory play-hv.yml -t backup_auto
+```
+backup manual with name
+```bash
+  ansible-playbook -i inventory play-hv.yml -t backup_manual -e hashivault__snap_name=my_backup
+```
+Unseal instance
+```bash
+  ansible-playbook -i inventory play-hv.yml -t unseal
+```
+
+*License*
+---------
 
 MIT
 
-## *Author Information*
+*Author Information*
+--------------------
 
 This role was created in 2023 by:
 

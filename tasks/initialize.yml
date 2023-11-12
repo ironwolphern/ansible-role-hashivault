@@ -1,0 +1,58 @@
+---
+- name: "Initialize Hashicorp Vault server | Initialize | {{ _title_pfx }}"
+  delegate_to: "{{ ansible_hostname | default('localhost', true) }}"
+  become: true
+  tags: initialize
+  block:
+    - name: "Header | Initialize | {{ _title_pfx }}"
+      ansible.builtin.debug:
+        msg: "----------------------------------- INITIALIZATION -----------------------------------"
+
+    - name: "Create Hashicorp Vault unseal and token directory | Initialize | {{ _title_pfx }}"
+      ansible.builtin.file:
+        path: "{{ item }}"
+        state: directory
+        owner: "{{ hashivault__user }}"
+        group: "{{ hashivault__group }}"
+        mode: "0640"
+      loop:
+        - "{{ hashivault__config_dir }}/unseal"
+        - "{{ hashivault__config_dir }}/token"
+
+    - name: "Initialize Hashicorp Vault server operator | Initialize | {{ _title_pfx }}"
+      ansible.builtin.command:
+        cmd: "vault operator init \
+          -key-shares={{ hashivault__init_key_shares }} -key-threshold={{ hashivault__init_key_threshold }} \
+          -format=json"
+      environment:
+        VAULT_ADDR: "https://{{ hashivault__server_fqdn }}:8200"
+      register: _hashivault__initialize
+      run_once: true
+      changed_when: _hashivault__initialize.rc == 0
+
+    - name: "Parse Hashicorp Vault server initialize | Initialize | {{ _title_pfx }}"
+      ansible.builtin.set_fact:
+        _hashivault__init_parsed_vault: "{{ _hashivault__initialize.stdout | from_json }}"
+
+    - name: "Copy unseal keys to files | Initialize | {{ _title_pfx }}"
+      ansible.builtin.copy:
+        content: "{{ item }}"
+        dest: "{{ hashivault__config_dir }}/unseal/hv-{{ _index }}.key"
+        owner: "{{ hashivault__user }}"
+        group: "{{ hashivault__group }}"
+        mode: "0400"
+      loop: "{{ _hashivault__init_parsed_vault.unseal_keys_b64 | flatten(levels=1) }}"
+      loop_control:
+        index_var: _index
+      run_once: true
+      no_log: "{{ not hashivault__debugger }}"
+
+    - name: "Copy root token to file | Initialize | {{ _title_pfx }}"
+      ansible.builtin.copy:
+        content: "{{ _hashivault__init_parsed_vault.root_token }}"
+        dest: "{{ hashivault__config_dir }}/token/hv-root.token"
+        owner: "{{ hashivault__user }}"
+        group: "{{ hashivault__group }}"
+        mode: "0400"
+      run_once: true
+      no_log: "{{ not hashivault__debugger }}"

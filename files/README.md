@@ -1,0 +1,1 @@
+*Include in this directory the custom certificate, key and CA certificates for your Hashicorp Vault server.*

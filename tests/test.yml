@@ -1,6 +1,11 @@
 ---
 - name: Test playbook
-  hosts: localhost
-  remote_user: root
-#  roles:
-#    - template-ansible-role
+  hosts: vault
+  gather_facts: true
+
+  tasks:
+  roles:
+    - ansible-role-hashivault
+  vars:
+    hashivault__version: 1.15.1
+    hashivault__server_fqdn: vault.example.local

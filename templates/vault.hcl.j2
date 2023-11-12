@@ -1,0 +1,34 @@
+listener "tcp" {
+  address            = "0.0.0.0:8200"
+  cluster_address    = "{{ hashivault__server_fqdn }}:8201"
+  tls_disable        = "false"
+{% if hashivault__tls_provider eq 'custom' %}
+  tls_cert_file      = "{{ hashivault__config_dir }}/tls/custom-cert.pem"
+  tls_key_file       = "{{ hashivault__config_dir }}/tls/custom-key.pem"
+  tls_client_ca_file = "{{ hashivault__config_dir }}/tls/custom-ca.pem"
+{% endif %}
+{% if hashivault__tls_provider eq 'selfsigned' %}
+  tls_cert_file      = "{{ hashivault__config_dir }}/tls/selfsigned-cert.pem"
+  tls_key_file       = "{{ hashivault__config_dir }}/tls/selfsigned-key.pem"
+{% endif %}
+{% if hashivault__tls_provider eq 'certbot' %}
+  tls_cert_file      = "{{ hashivault__config_dir }}/tls/certbot-cert.pem"
+  tls_key_file       = "{{ hashivault__config_dir }}/tls/certbot-key.pem"
+{% endif %}
+  tls_min_version    = "tls13"
+}
+
+storage "raft" {
+  path    = "{{ hashivault__install_dir }}/data"
+  node_id = "vault-server"
+}
+
+api_addr     = "https://{{ hashivault__server_fqdn }}:8200"
+cluster_addr = "https://{{ hashivault__server_fqdn }}:8201"
+
+log_level         = "INFO"
+ui                = true
+default_lease_ttl = "168h"
+max_lease_ttl     = "720h"
+plugin_directory  = "{{ hashivault__install_dir }}/plugins"
+disable_mlock     = true

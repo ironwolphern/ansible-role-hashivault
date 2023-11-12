@@ -6,5 +6,5 @@
   block:
     - name: "Clean tmp files and directories | Finish | {{ _title_pfx }}"
       ansible.builtin.file:
-        path: "{{ example__tmp_dir }}"
+        path: "{{ hashivault__tmp_dir }}"
         state: absent

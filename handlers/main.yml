@@ -1,2 +1,5 @@
 ---
-# handlers file for example-role
+- name: "Reload Systemd | handlers | {{ _title_pfx }}"
+  ansible.builtin.systemd:
+    daemon_reload: true
+  listen: systemd_reload
