@@ -16,3 +16,14 @@
         path: "{{ hashivault__tmp_dir }}"
         state: directory
         mode: "0755"
+
+    - name: "Check required parameters | Init | {{ _title_pfx }}"
+      ansible.builtin.assert:
+        that:
+          - "{{ item }} | default('', true) | length > 0"
+        fail_msg: "Required parameter '{{ item }}' is not defined."
+        success_msg: "Required parameter '{{ item }}' is ok."
+        quiet: true
+      loop:
+        - hashivault__version
+        - hashivault__server_fqdn

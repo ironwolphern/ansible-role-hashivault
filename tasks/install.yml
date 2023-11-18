@@ -8,17 +8,6 @@
       ansible.builtin.debug:
         msg: "---------------------------------- INSTALL / UPDATE ----------------------------------"
 
-    - name: "Check required parameters | Install | {{ _title_pfx }}"
-      ansible.builtin.assert:
-        that:
-          - "{{ item }}|d('',true)|length > 0"
-        fail_msg: "Required parameter '{{ item }}' is not defined."
-        success_msg: "Required parameter '{{ item }}' is ok."
-        quiet: true
-      loop:
-        - hashivault__version
-        - hashivault__server_fqdn
-
     - name: "Install dependencies | Install | {{ _title_pfx }}"
       ansible.builtin.package:
         name: "{{ item }}"
@@ -118,26 +107,39 @@
         state: link
         force: true
 
-    - name: "Copy certificate and CA certificates to Hashicorp Vault | Install | {{ _title_pfx }}"
-      ansible.builtin.copy:
-        src: "{{ item }}"
-        dest: "{{ hashivault__config_dir }}/tls/{{ item }}"
-        owner: root
-        group: root
-        mode: "0644"
-      loop:
-        - custom-cert.pem
-        - custom-ca.pem
+    - name: "Install selfsigned certificate to Hashicorp Vault | Install | {{ _title_pfx }}"
+      ansible.builtin.include_tasks:
+        file: install_selfsigned_cert.yml
+      when: hashivault__tls_provider == "selfsigned"
 
-    - name: "Copy certificate key to Hashicorp Vault | Install | {{ _title_pfx }}"
-      ansible.builtin.copy:
-        src: "{{ item }}"
-        dest: "{{ hashivault__config_dir }}/tls/{{ item }}"
-        owner: root
-        group: "{{ hashivault__group }}"
-        mode: "0640"
-      loop:
-        - custom-key.pem
+    - name: "Install letsencrypt certificate to Hashicorp Vault | Install | {{ _title_pfx }}"
+      ansible.builtin.include_tasks:
+        file: install_letsencrypt_cert.yml
+      when: hashivault__tls_provider == "certbot"
+
+    - name: "Install custom certificate to Hashicorp Vault | Install | {{ _title_pfx }}"
+      when: hashivault__tls_provider == "custom"
+      block:
+        - name: "Copy custom certificate and CA certificates to Hashicorp Vault | Install | {{ _title_pfx }}"
+          ansible.builtin.copy:
+            src: "{{ item }}"
+            dest: "{{ hashivault__config_dir }}/tls/{{ item }}"
+            owner: root
+            group: root
+            mode: "0644"
+          loop:
+            - custom-cert.pem
+            - custom-ca.pem
+
+        - name: "Copy custom certificate key to Hashicorp Vault | Install | {{ _title_pfx }}"
+          ansible.builtin.copy:
+            src: "{{ item }}"
+            dest: "{{ hashivault__config_dir }}/tls/{{ item }}"
+            owner: root
+            group: "{{ hashivault__group }}"
+            mode: "0640"
+          loop:
+            - custom-key.pem
 
     - name: "Create Hashicorp Vault config file | Install | {{ _title_pfx }}"
       ansible.builtin.template:

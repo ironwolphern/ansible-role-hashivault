@@ -2,9 +2,10 @@
 # Installation dependencies
 hashivault__base_packages:
   - unzip
+  - openssl
 
 # Configuration paths
-hashivault__tmp_dir: /tmp/hashivault_role
+hashivault__tmp_dir: /tmp/hashivault
 hashivault__install_dir: /opt/vault
 hashivault__config_dir: /etc/vault.d
 

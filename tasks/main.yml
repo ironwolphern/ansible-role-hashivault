@@ -6,7 +6,7 @@
     - name: "Initialize role | {{ _title_pfx }}"
       ansible.builtin.import_tasks:
         file: init.yml
-      tags: [always]
+      tags: always
 
     - name: "Install or Update Hashicorp Vault server | {{ _title_pfx }}"
       ansible.builtin.import_tasks:
@@ -16,17 +16,17 @@
     - name: "Initialize Hashicorp Vault server | {{ _title_pfx }}"
       ansible.builtin.import_tasks:
         file: initialize.yml
-      tags: [initialize]
+      tags: initialize
 
     - name: "Unseal Hashicorp Vault server | {{ _title_pfx }}"
       ansible.builtin.import_tasks:
         file: unseal.yml
-      tags: [unseal]
+      tags: unseal
 
     - name: "Post-install Hashicorp Vault server | {{ _title_pfx }}"
       ansible.builtin.import_tasks:
         file: post_install.yml
-      tags: [post_install]
+      tags: post_install
 
     - name: "Backup Hashicorp Vault server Auto | {{ _title_pfx }}"
       ansible.builtin.import_tasks:
@@ -51,4 +51,4 @@
     - name: "Finalize role | {{ _title_pfx }}"
       ansible.builtin.import_tasks:
         file: finish.yml
-      tags: [always]
+      tags: always

@@ -1,10 +1,10 @@
 ---
-- name: "Install Hashicorp Vault server | Install Selfsigned certificate | {{ _title_pfx }}"
+- name: "Install Hashicorp Vault server | Install | Install Selfsigned certificate | {{ _title_pfx }}"
   delegate_to: "{{ ansible_hostname | default('localhost', true) }}"
   become: true
-  tags: [selfsigned]
+  tags: selfsigned
   block:
-    - name: Generate an OpenSSL private key | Install Selfsigned certificate | {{ _title_pfx }}"
+    - name: Generate an OpenSSL private key | Install | Install Selfsigned certificate | {{ _title_pfx }}"
       community.crypto.openssl_privatekey:
         path: "{{ hashivault__config_dir }}/tls/selfsigned-key.pem"
         passphrase: "{{ hashivault__tls_selfsigned_key_passphrase }}"
@@ -16,7 +16,7 @@
         state: present
       when: hashivault__tls_provider == 'selfsigned'
 
-    - name: Create certificate signing request (CSR) for self-signed certificate | Install Selfsigned certificate | {{ _title_pfx }}"
+    - name: Create certificate signing request (CSR) for self-signed certificate | Install | Install Selfsigned certificate | {{ _title_pfx }}"
       community.crypto.openssl_csr_pipe:
         privatekey_path: "{{ hashivault__config_dir }}/tls/selfsigned-key.pem"
         privatekey_passphrase: "{{ hashivault__tls_selfsigned_key_passphrase }}"
@@ -30,7 +30,7 @@
       register: _hashivault__csr
       when: hashivault__tls_provider == 'selfsigned'
 
-    - name: Create self-signed certificate from (CSR) | Install Selfsigned certificate | {{ _title_pfx }}"
+    - name: Create self-signed certificate from (CSR) | Install | Install Selfsigned certificate | {{ _title_pfx }}"
       community.crypto.x509_certificate:
         path: "{{ hashivault__config_dir }}/tls/selfsigned-cert.pem"
         csr_content: "{{ _hashivault__csr.csr }}"
