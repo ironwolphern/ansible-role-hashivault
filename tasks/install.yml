@@ -1,6 +1,5 @@
 ---
 - name: "Install Hashicorp Vault server | Install | {{ _title_pfx }}"
-  delegate_to: "{{ ansible_hostname | default('localhost', true) }}"
   become: true
   tags: [install, update]
   block:

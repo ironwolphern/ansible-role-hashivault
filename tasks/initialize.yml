@@ -1,6 +1,5 @@
 ---
 - name: "Initialize Hashicorp Vault server | Initialize | {{ _title_pfx }}"
-  delegate_to: "{{ ansible_hostname | default('localhost', true) }}"
   become: true
   tags: initialize
   block:

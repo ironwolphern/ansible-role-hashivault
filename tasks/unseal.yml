@@ -1,6 +1,5 @@
 ---
 - name: "Unseal Hashicorp Vault server | Unseal | {{ _title_pfx }}"
-  delegate_to: "{{ ansible_hostname | default('localhost', true) }}"
   become: true
   tags: unseal
   block:

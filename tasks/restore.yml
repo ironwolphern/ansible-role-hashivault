@@ -1,6 +1,5 @@
 ---
 - name: "Restore backup Hashicorp Vault server | Restore | {{ _title_pfx }}"
-  delegate_to: "{{ ansible_hostname | default('localhost', true) }}"
   become: true
   tags: [never, restore]
   block:

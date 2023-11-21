@@ -1,6 +1,5 @@
 ---
 - name: "Backup Hashicorp Vault server Manual | Backup_manual | {{ _title_pfx }}"
-  delegate_to: "{{ ansible_hostname | default('localhost', true) }}"
   become: true
   tags: [never, backup_manual]
   block:

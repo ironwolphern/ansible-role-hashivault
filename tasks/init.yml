@@ -1,6 +1,5 @@
 ---
 - name: "Initialize role | {{ _title_pfx }}"
-  delegate_to: "{{ ansible_hostname | default('localhost', true) }}"
   become: true
   tags: always
   block:
@@ -10,6 +9,10 @@
           - "######################################################################################"
           - "##                              HASHICORP VAULT SERVER                              ##"
           - "######################################################################################"
+
+    - name: "Header | Init | {{ _title_pfx }}"
+      ansible.builtin.debug:
+        msg: "---------------------------------- INIT ----------------------------------"
 
     - name: "Ensure tmp directory exists | Init | {{ _title_pfx }}"
       ansible.builtin.file:

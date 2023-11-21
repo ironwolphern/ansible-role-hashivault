@@ -1,6 +1,5 @@
 ---
 - name: "Remove Hashicorp Vault server | Remove | {{ _title_pfx }}"
-  delegate_to: "{{ ansible_hostname | default('localhost', true) }}"
   become: true
   tags: [never, remove]
   block:
