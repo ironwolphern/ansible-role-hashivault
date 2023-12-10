@@ -29,6 +29,8 @@
         hour: "{{ hashivault__backup_rotate_hour }}"
         weekday: "{{ hashivault__backup_rotate_weekday }}"
         user: root
-        job: "find {{ hashivault__install_dir }}/backup -type f -name '{{ hashivault__snap_name }}_*.snap' -mtime +{{ hashivault__backup_rotate }} -delete"
+        job: |
+          "find {{ hashivault__install_dir }}/backup -type f -name '{{ hashivault__snap_name }}_*.snap' \
+          -mtime +{{ hashivault__backup_rotate }} -delete"
         cron_file: hashivault_backup_rotate
       when: hashivault__backup_rotate > 0
