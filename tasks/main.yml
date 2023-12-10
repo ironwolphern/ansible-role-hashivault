@@ -20,7 +20,7 @@
     - name: "Unseal Hashicorp Vault server | {{ _title_pfx }}"
       ansible.builtin.import_tasks:
         file: unseal.yml
-      tags: unseal
+      tags: [unseal, update]
 
     - name: "Post-install Hashicorp Vault server | {{ _title_pfx }}"
       ansible.builtin.import_tasks:
@@ -42,10 +42,10 @@
         file: restore.yml
       tags: [never, restore]
 
-    - name: "Remove Hashicorp Vault server | {{ _title_pfx }}"
+    - name: "Uninstall Hashicorp Vault server | {{ _title_pfx }}"
       ansible.builtin.import_tasks:
-        file: remove.yml
-      tags: [never, remove]
+        file: uninstall.yml
+      tags: [never, uninstall]
 
     - name: "Finalize role | {{ _title_pfx }}"
       ansible.builtin.import_tasks:

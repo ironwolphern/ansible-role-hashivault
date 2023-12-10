@@ -1,19 +1,20 @@
 listener "tcp" {
   address            = "0.0.0.0:8200"
   cluster_address    = "{{ hashivault__server_fqdn }}:8201"
-  tls_disable        = "false"
-{% if hashivault__tls_provider eq 'custom' %}
+  tls_disable        = false
+{% if hashivault__tls_provider == 'custom' %}
   tls_cert_file      = "{{ hashivault__config_dir }}/tls/custom-cert.pem"
   tls_key_file       = "{{ hashivault__config_dir }}/tls/custom-key.pem"
   tls_client_ca_file = "{{ hashivault__config_dir }}/tls/custom-ca.pem"
 {% endif %}
-{% if hashivault__tls_provider eq 'selfsigned' %}
+{% if hashivault__tls_provider == 'selfsigned' %}
   tls_cert_file      = "{{ hashivault__config_dir }}/tls/selfsigned-cert.pem"
   tls_key_file       = "{{ hashivault__config_dir }}/tls/selfsigned-key.pem"
 {% endif %}
-{% if hashivault__tls_provider eq 'certbot' %}
+{% if hashivault__tls_provider == 'certbot' %}
   tls_cert_file      = "{{ hashivault__config_dir }}/tls/certbot-cert.pem"
   tls_key_file       = "{{ hashivault__config_dir }}/tls/certbot-key.pem"
+  tls_client_ca_file = "{{ hashivault__config_dir }}/tls/certbot-ca.pem"
 {% endif %}
   tls_min_version    = "tls13"
 }

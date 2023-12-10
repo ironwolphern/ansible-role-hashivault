@@ -10,7 +10,7 @@ hashivault__install_dir: /opt/vault
 hashivault__config_dir: /etc/vault.d
 
 # Version app
-hashivault__version: 1.15.1
+hashivault__version: 1.15.4
 
 # User and group in server installation
 hashivault__user: vault
@@ -24,7 +24,7 @@ hashivault__init_key_shares: 5
 hashivault__init_key_threshold: 3
 
 # KV secret engine
-hashivault__kv_secret_engine_path: secret
+hashivault__kv_secret_engine_path: secrets
 
 # Backup parameters
 hashivault__snap_name: backup
@@ -50,11 +50,10 @@ hashivault__tls_type: RSA
 hashivault__tls_size: 4096
 
 # TLS selfsigned parameters:
-hashivault__tls_selfsigned_key_passphrase: changeme
 hashivault__tls_selfsigned_csr_country: ES
 hashivault__tls_selfsigned_csr_state: Madrid
 hashivault__tls_selfsigned_csr_locality: Madrid
-hashivault__tls_selfsigned_csr_organization: Example
+hashivault__tls_selfsigned_csr_organization: My Company
 hashivault__tls_selfsigned_csr_ou: IT
 # Values of the list must be prefixed by their options. (These are email, URI, DNS, RID, IP, dirName, otherName)
 # Example: hashivault__tls_selfsigned_csr_sans: [DNS:example.com, DNS:www.example.com]

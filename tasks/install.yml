@@ -111,10 +111,11 @@
         file: install_selfsigned_cert.yml
       when: hashivault__tls_provider == "selfsigned"
 
-    - name: "Install letsencrypt certificate to Hashicorp Vault | Install | {{ _title_pfx }}"
-      ansible.builtin.include_tasks:
-        file: install_letsencrypt_cert.yml
-      when: hashivault__tls_provider == "certbot"
+    # DEVELOPING
+    # - name: "Install letsencrypt certificate to Hashicorp Vault | Install | {{ _title_pfx }}"
+    #   ansible.builtin.include_tasks:
+    #     file: install_letsencrypt_cert.yml
+    #   when: hashivault__tls_provider == "certbot"
 
     - name: "Install custom certificate to Hashicorp Vault | Install | {{ _title_pfx }}"
       when: hashivault__tls_provider == "custom"
@@ -158,7 +159,7 @@
       notify: systemd_reload
 
     - name: "Start Hashicorp Vault service | Install | {{ _title_pfx }}"
-      ansible.builtin.systemd:
+      ansible.builtin.systemd_service:
         name: vault
         state: started
         enabled: true

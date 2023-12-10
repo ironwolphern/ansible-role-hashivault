@@ -1,9 +1,10 @@
 ---
-- name: "Install Hashicorp Vault server | Install | Install Lets Encrypt certificate | {{ _title_pfx }}"
-  become: true
-  tags: certbot
-  block:
-    - name: "Generate an OpenSSL private key | Install | Install Selfsigned certificate | {{ _title_pfx }}"
-      ansible.builtin.include_role:
-        name: ironwolphern.certbot
-      when: hashivault__tls_provider == "certbot"
+# DEVELOPING
+# - name: "Install Hashicorp Vault server | Install | Install Lets Encrypt certificate | {{ _title_pfx }}"
+#   become: true
+#   tags: certbot
+#   block:
+#     - name: "Generate certificate | Install | Install Lets Encrypt certificate | {{ _title_pfx }}"
+#       ansible.builtin.include_role:
+#         name: ironwolphern.ansible-role-certbot
+#       when: hashivault__tls_provider == "certbot"

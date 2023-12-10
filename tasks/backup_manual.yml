@@ -12,5 +12,5 @@
         cmd: vault operator raft snapshot save "{{ hashivault__install_dir }}/backup/{{ hashivault__snap_name }}.snap"
       environment:
         VAULT_ADDR: "https://{{ hashivault__server_fqdn }}:8200"
-      register: _hashivault_backup
-      changed_when: _hashivault_backup.rc == 0
+      register: _backup
+      changed_when: _backup.rc == 0

@@ -1,7 +1,10 @@
 ---
 - name: "Unseal Hashicorp Vault server | Unseal | {{ _title_pfx }}"
   become: true
-  tags: unseal
+  tags: [unseal, update]
+  environment:
+    VAULT_ADDR: "https://{{ hashivault__server_fqdn }}:8200"
+    VAULT_SKIP_VERIFY: "{{ (hashivault__tls_provider != 'selfsigned') | ternary('false', 'true') }}"
   block:
     - name: "Header | Unseal | {{ _title_pfx }}"
       ansible.builtin.debug:
@@ -9,37 +12,34 @@
 
     - name: "Check if Hashicorp Vault server is already unsealed | Unseal | {{ _title_pfx }}"
       ansible.builtin.shell:
-        cmd: "set -o pipefail && vault status -format=yaml | grep -q 'sealed: false'"
-      environment:
-        VAULT_ADDR: "https://{{ hashivault__server_fqdn }}:8200"
-      register: _hashivault__unseal_status
-      changed_when: _hashivault__unseal_status.rc != 0
-      failed_when: _hashivault__unseal_status.rc not in [ 0, 1 ]
+        cmd: "set -o pipefail && vault status -format=yaml | grep -c 'sealed: false'"
+        executable: /bin/bash
+      register: _unseal_status
+      changed_when: _unseal_status.rc == 0
+      failed_when: _unseal_status.rc not in [0, 1, 141]
 
     - name: "Process unseal Hashicorp Vault server | Unseal | {{ _title_pfx }}"
-      when: _hashivault__unseal_status.rc != 0
+      when: _unseal_status.stdout == "0"
       block:
         - name: "Find unseal keys | Unseal | {{ _title_pfx }}"
           ansible.builtin.find:
             paths: "{{ hashivault__config_dir }}/unseal"
             patterns: "*.key"
             file_type: file
-          register: _hashivault__unseal_path_keys
+          register: _unseal_path_keys
 
         - name: "Read unseal keys from files | Unseal | {{ _title_pfx }}"
           ansible.builtin.command:
             cmd: "cat {{ item.path }}"
-          register: _hashivault__unseal_keys
-          changed_when: _hashivault__unseal_keys.rc == 0
-          loop: "{{ _hashivault__unseal_path_keys.files }}"
+          register: _unseal_keys
+          changed_when: _unseal_keys.rc == 0
+          loop: "{{ _unseal_path_keys.files }}"
           no_log: "{{ not hashivault__debugger }}"
 
         - name: "Unseal Hashicorp Vault server | Unseal | {{ _title_pfx }}"
           ansible.builtin.command:
             cmd: "vault operator unseal {{ item.stdout }}"
-          environment:
-            VAULT_ADDR: "https://{{ hashivault__server_fqdn }}:8200"
-          register: _hashivault__unseal
-          changed_when: _hashivault__unseal.rc == 0
-          loop: "{{ _hashivault__unseal_keys.results }}"
+          register: _unseal
+          changed_when: _unseal.rc == 0
+          loop: "{{ _unseal_keys.results }}"
           no_log: "{{ not hashivault__debugger }}"

@@ -20,7 +20,7 @@
     - name: "Check restore file exists | Restore | {{ _title_pfx }}"
       ansible.builtin.stat:
         path: "{{ hashivault__restore_file_path }}"
-      register: _hashivault__restore_stat
+      register: _restore_stat
       when: hashivault__restore_file_path is defined
 
     - name: "Restore backup Hashicorp Vault server | Restore | {{ _title_pfx }}"
@@ -28,6 +28,6 @@
         cmd: "vault operator raft snapshot restore -force {{ hashivault__restore_file_path }}"
       environment:
         VAULT_ADDR: "https://{{ hashivault__server_fqdn }}:8200"
-      register: _hashivault__restore
-      changed_when: _hashivault__restore.rc == 0
-      when: hashivault__restore_file_path is defined and _hashivault__restore_stat.stat.exists
+      register: _restore
+      changed_when: _restore.rc == 0
+      when: hashivault__restore_file_path is defined and _restore_stat.stat.exists
