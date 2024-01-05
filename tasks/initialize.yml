@@ -2,6 +2,9 @@
 - name: "Initialize Hashicorp Vault server | Initialize | {{ _title_pfx }}"
   become: true
   tags: initialize
+  environment:
+    VAULT_ADDR: "https://{{ hashivault__server_fqdn }}:8200"
+    VAULT_SKIP_VERIFY: "{{ (hashivault__tls_provider != 'selfsigned') | ternary('false', 'true') }}"
   block:
     - name: "Header | Initialize | {{ _title_pfx }}"
       ansible.builtin.debug:
@@ -13,7 +16,7 @@
       register: _initialized_ok
 
     - name: "Initialize Hashicorp Vault | Initialize | {{ _title_pfx }}"
-      when: not _initialized_ok
+      when: not _initialized_ok.stat.exists
       block:
         - name: "Create Hashicorp Vault unseal directory | Initialize | {{ _title_pfx }}"
           ansible.builtin.file:
@@ -24,14 +27,13 @@
             mode: "0640"
           loop:
             - "{{ hashivault__config_dir }}/unseal"
+            - "{{ hashivault__config_dir }}/token"
 
         - name: "Initialize Hashicorp Vault server operator | Initialize | {{ _title_pfx }}"
           ansible.builtin.command:
             cmd: "vault operator init \
               -key-shares={{ hashivault__init_key_shares }} -key-threshold={{ hashivault__init_key_threshold }} \
               -format=json"
-          environment:
-            VAULT_ADDR: "https://{{ hashivault__server_fqdn }}:8200"
           register: _initialize
           run_once: true
           changed_when: _initialize.rc == 0
@@ -50,6 +52,16 @@
           loop: "{{ _hashivault__init_parsed_vault.unseal_keys_b64 | flatten(levels=1) }}"
           loop_control:
             index_var: _index
+          run_once: true
+          no_log: "{{ not hashivault__debugger }}"
+
+        - name: "Copy root token to file | Initialize | {{ _title_pfx }}"
+          ansible.builtin.copy:
+            content: "{{ _hashivault__init_parsed_vault.root_token }}"
+            dest: "{{ hashivault__config_dir }}/token/hv-root.token"
+            owner: "{{ hashivault__user }}"
+            group: "{{ hashivault__group }}"
+            mode: "0400"
           run_once: true
           no_log: "{{ not hashivault__debugger }}"
 

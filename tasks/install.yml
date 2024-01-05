@@ -38,6 +38,16 @@
         path: ~/.bashrc
         line: "set +o history"
 
+    - name: "Delete old shell history for user | Install | {{ _title_pfx }}"
+      ansible.builtin.file:
+        path: "/home/{{ ansible_user }}/.bash_history"
+        state: absent
+
+    - name: "Delete old shell history for root | Install | {{ _title_pfx }}"
+      ansible.builtin.file:
+        path: /root/.bash_history
+        state: absent
+
     - name: "Create Hashicorp Vault user | Install | {{ _title_pfx }}"
       ansible.builtin.user:
         name: "{{ hashivault__user }}"

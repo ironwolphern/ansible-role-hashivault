@@ -12,7 +12,7 @@
 
     - name: "Read root token from files | Post_install | {{ _title_pfx }}"
       ansible.builtin.command:
-        cmd: "cat /root/.vault-token"
+        cmd: "cat {{ hashivault__config_dir }}/token/hv-root.token"
       register: _root_token
       changed_when: _root_token.rc == 0
       no_log: "{{ not hashivault__debugger }}"
@@ -78,6 +78,11 @@
 
     - name: "Safe root token | Post_install | {{ _title_pfx }}"
       ansible.builtin.fetch:
-        src: "/root/.vault-token"
+        src: "{{ hashivault__config_dir }}/token/hv-root.token"
         dest: "root_hv_token.txt"
         flat: true
+
+    - name: "Delete root token | Post_install | {{ _title_pfx }}"
+      ansible.builtin.file:
+        path: "/root/.vault-token"
+        state: absent
