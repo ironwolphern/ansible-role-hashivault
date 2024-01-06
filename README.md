@@ -27,6 +27,10 @@ Too the community.crypto modules need the following library installed:
 
 cryptography >= 1.3
 
+When you install vault with certbot, you need to install certbot in your OS and config a certificate previusly, you can install it with the following role:
+
+  - ironwolphern.ansible-role-certbot
+
 The recommended server features for lab are:
 
 For lab enviroment:
@@ -68,7 +72,7 @@ This is a list of required and optinal variables and parameters for this role:
 | hashivault__backup_rotate | Rotate backups in days | number | 7 | | no |
 | hashivault__restore_file_path | Path for restore backup | string | '' | | no |
 | hashivault__debugger | Enable debugger | boolean | false | true/false | no |
-| hashivault__tls_provider | Type tls provider | string | selfsigned | selfsigned/custom | no |
+| hashivault__tls_provider | Type tls provider | string | selfsigned | selfsigned/custom/certbot | no |
 | hashivault__tls_type | Type of tls encrypt | string | RSA | RSA/DSA/ECC | no |
 | hashivault__tls_size | Size of tls key | number | 4096 | | no |
 | hashivault__tls_selfsigned_csr_country | Country for csr on selfsigned provider | string | ES | | no |
@@ -126,10 +130,33 @@ Unseal instance
   ansible-playbook -i inventory play-vault.yml -t unseal
 ```
 
+This is an example of a playbook for install and config Certbot(Let´s Encrypt) with Hashicorp Vault:
+
+*play-vault.yml*
+```yaml
+- hosts: vault
+  gather_facts: true
+  roles:
+    - role: ansible-role-certbot
+      vars:
+        certbot__email: demo@example.local
+        certbot__dns_provider: cloudflare
+        certbot__dns_provider_token: <token-provider>
+        certbot__domains:
+          - vault.example.local
+
+    - role: ansible-role-hashivault
+      vars:
+        hashivault__version: 1.15.4
+        hashivault__server_fqdn: vault.example.local
+        hashivault__tls_provider: certbot
+
+```
+
 *Roadmap*
 ---------
 
-For upcoming versions, integration with Let's Encrypt certificates is being developed as a server tls certificate.
+For upcoming versions, convert an instance of vault in a PKI server.
 
 *License*
 ---------

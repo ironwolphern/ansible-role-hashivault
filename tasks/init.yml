@@ -30,3 +30,18 @@
       loop:
         - hashivault__version
         - hashivault__server_fqdn
+
+    - name: "Check stat certbot binary installed | Init | {{ _title_pfx }}"
+      ansible.builtin.stat:
+        path: /usr/bin/certbot
+      register: _certbot_installed
+      when: hashivault__tls_provider == "certbot"
+
+    - name: "Check certbot installed | Init | {{ _title_pfx }}"
+      ansible.builtin.assert:
+        that:
+          - _certbot_installed.stat.exists
+        fail_msg: "Certbot is not installed."
+        success_msg: "Certbot is installed."
+        quiet: true
+      when: hashivault__tls_provider == "certbot"
