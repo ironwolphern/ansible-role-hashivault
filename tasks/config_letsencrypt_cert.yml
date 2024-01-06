@@ -1,0 +1,44 @@
+---
+- name: "Install Hashicorp Vault server | Install | Config Lets Encrypt certificate | {{ _title_pfx }}"
+  become: true
+  tags: certbot
+  block:
+    - name: "Change group security for Lets Encrypt | Install | Config Lets Encrypt certificate | {{ _title_pfx }}"
+      ansible.builtin.file:
+        path: /etc/letsencrypt
+        state: directory
+        owner: root
+        group: "{{ hashivault__group }}"
+        recurse: true
+
+    - name: "Change group security for Lets Encrypt certificate key | Install | Config Lets Encrypt certificate | {{ _title_pfx }}"
+      ansible.builtin.file:
+        path: "/etc/letsencrypt/archive/{{ hashivault__server_fqdn }}/privkey1.pem"
+        mode: "0640"
+
+    - name: "Create symbolic link for Lets Encrypt certificate key | Install | Config Lets Encrypt certificate | {{ _title_pfx }}"
+      ansible.builtin.file:
+        src: "/etc/letsencrypt/live/{{ hashivault__server_fqdn }}/privkey.pem"
+        dest: "{{ hashivault__config_dir }}/tls/certbot-key.pem"
+        owner: "{{ hashivault__user }}"
+        group: "{{ hashivault__group }}"
+        state: link
+        follow: false
+
+    - name: "Create symbolic link for Lets Encrypt certificate | Install | Config Lets Encrypt certificate | {{ _title_pfx }}"
+      ansible.builtin.file:
+        src: "/etc/letsencrypt/live/{{ hashivault__server_fqdn }}/fullchain.pem"
+        dest: "{{ hashivault__config_dir }}/tls/certbot-cert.pem"
+        owner: "{{ hashivault__user }}"
+        group: "{{ hashivault__group }}"
+        state: link
+        follow: false
+
+    - name: "Create symbolic link for Lets Encrypt certificate CA | Install | Config Lets Encrypt certificate | {{ _title_pfx }}"
+      ansible.builtin.file:
+        src: "/etc/letsencrypt/live/{{ hashivault__server_fqdn }}/chain.pem"
+        dest: "{{ hashivault__config_dir }}/tls/certbot-ca.pem"
+        owner: "{{ hashivault__user }}"
+        group: "{{ hashivault__group }}"
+        state: link
+        follow: false

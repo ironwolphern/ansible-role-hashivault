@@ -51,7 +51,7 @@
     - name: "Create Hashicorp Vault user | Install | {{ _title_pfx }}"
       ansible.builtin.user:
         name: "{{ hashivault__user }}"
-        shell: /bin/nologin
+        shell: /usr/sbin/nologin
         system: true
         createhome: false
         state: present
@@ -120,12 +120,13 @@
       ansible.builtin.include_tasks:
         file: install_selfsigned_cert.yml
       when: hashivault__tls_provider == "selfsigned"
+      tags: selfsigned
 
-    # DEVELOPING
-    # - name: "Install letsencrypt certificate to Hashicorp Vault | Install | {{ _title_pfx }}"
-    #   ansible.builtin.include_tasks:
-    #     file: install_letsencrypt_cert.yml
-    #   when: hashivault__tls_provider == "certbot"
+    - name: "Install letsencrypt certificate to Hashicorp Vault | Install | {{ _title_pfx }}"
+      ansible.builtin.include_tasks:
+        file: config_letsencrypt_cert.yml
+      when: hashivault__tls_provider == "certbot"
+      tags: certbot
 
     - name: "Install custom certificate to Hashicorp Vault | Install | {{ _title_pfx }}"
       when: hashivault__tls_provider == "custom"
