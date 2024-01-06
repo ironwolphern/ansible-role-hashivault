@@ -1,5 +1,11 @@
 # ChangeLog
 
+## Release 1.1.0
+
+January 2024
+  - Add new feature tls with certbot (Let´s Encrypt).
+  - Fix error handler when install vault.
+
 ## Release 1.0.1
 
 January 2024
