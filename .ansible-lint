@@ -8,7 +8,7 @@ profile: production  # min, basic, moderate,safety, shared, production
 # option are parsed relative to the CWD of execution.
 exclude_paths:
   - molecule/
-  - test/
+  - tests/
 
 # Offline mode disables installation of requirements.yml and schema refreshing
 offline: true
