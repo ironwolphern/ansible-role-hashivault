@@ -6,5 +6,5 @@
   roles:
     - role: ansible-role-hashivault
       vars:
-        hashivault__version: 1.15.4
+        hashivault__version: 1.18.0
         hashivault__server_fqdn: vault.example.local

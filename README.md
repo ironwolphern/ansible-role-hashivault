@@ -55,7 +55,7 @@ This is a list of required and optinal variables and parameters for this role:
 | hashivault__tmp_dir | dir to download | string | /tmp/hashivault | | no |
 | hashivault__install_dir | dir to install | string | /opt/vault | | no |
 | hashivault__config_dir | dir to configure | string | /etc/vault.d | | no |
-| hashivault__version | version of the server | number | 1.15.4 | | yes |
+| hashivault__version | version of the server | number | 1.18.0 | | yes |
 | hashivault__user | service user | string | vault | | no |
 | hashivault__group | service group | string | vault | | no |
 | hashivault__server_fqdn | Name of server in fqdn | string | vault.example.local | | yes |
@@ -99,7 +99,7 @@ This is an example of use role with optionals and required parameters:
   roles:
   - role: ansible-role-hashivault
     vars:
-      hashivault__version: 1.15.4
+      hashivault__version: 1.18.0
       hashivault__server_fqdn: vault.example.local
 ```
 
@@ -147,7 +147,7 @@ This is an example of a playbook for install and config Certbot(Let´s Encrypt) 
 
     - role: ansible-role-hashivault
       vars:
-        hashivault__version: 1.15.4
+        hashivault__version: 1.18.0
         hashivault__server_fqdn: vault.example.local
         hashivault__tls_provider: certbot
 
