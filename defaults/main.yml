@@ -10,7 +10,7 @@ hashivault__install_dir: /opt/vault
 hashivault__config_dir: /etc/vault.d
 
 # Version app
-hashivault__version: 1.18.0
+hashivault__version: 1.18.1
 
 # User and group in server installation
 hashivault__user: vault

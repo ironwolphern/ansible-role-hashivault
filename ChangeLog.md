@@ -1,5 +1,11 @@
 # ChangeLog
 
+## Release 1.1.1
+
+October 2024
+  - Update Hashicorp Vault to version 1.18.0.
+  - Update ansible-lint version to 24.9.2.
+
 ## Release 1.1.0
 
 January 2024

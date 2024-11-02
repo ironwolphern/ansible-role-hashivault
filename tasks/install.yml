@@ -174,3 +174,11 @@
         name: vault
         state: started
         enabled: true
+      tags: [install]
+
+    - name: "Restart Hashicorp Vault service | Install | {{ _title_pfx }}"
+      ansible.builtin.systemd_service:
+        name: vault
+        state: restarted
+        daemon_reload: true
+      tags: [never, update]
