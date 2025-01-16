@@ -31,7 +31,7 @@ body:
     id: expected-behavior
     attributes:
       label: Expected Behavior
-      description: Also tell us, what did you expect to happen?
+      description: What did you expect to happen?
       placeholder: Tell us what you expect!
       value: "A expected result!"
     validations:
@@ -40,7 +40,7 @@ body:
     id: actual-behavior
     attributes:
       label: Actual Behavior
-      description: Also tell us, what happen?
+      description: What happened?
       placeholder: Tell us what you see!
       value: "A bug happened!"
     validations:
@@ -49,7 +49,7 @@ body:
     id: steps-to-reproduce
     attributes:
       label: Steps to Reproduce the Problem
-      description: Also tell us, how can we reproduce this bug?
+      description: How can we reproduce this bug?
       placeholder: Tell us how to reproduce!
       value: |
         1. Step 1
@@ -111,7 +111,7 @@ body:
     id: logs
     attributes:
       label: Relevant log output
-      description: Please copy and paste any relevant log output. This will be automatically formatted into code.
+      description: Please copy and paste any relevant log output. This will be automatically formatted.
       render: shell
     validations:
       required: false
